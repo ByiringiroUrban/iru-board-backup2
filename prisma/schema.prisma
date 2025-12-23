@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  email         String         @unique
+  company       String?
+  password      String
+  role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscription  Subscription?
+  payments      Payment[]
+  meetings      Meeting[]
+  chatMessages  ChatMessage[]
+}
+
+model Payment {
+  id                    String   @id @default(uuid())
+  userId                Int
+  planType              String
+  billingCycle          String
+  amount                Int
+  currency              String   @default("RWF")
+  status                String   @default("PENDING")
+  paypackTransactionId  String?
+  paypackPaymentUrl     String?
+  errorMessage          String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @unique
+  planType            String
+  billingCycle        String
+  status              String   @default("ACTIVE")
+  currentPeriodStart  DateTime
+  currentPeriodEnd    DateTime
+  cancelledAt         DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Meeting {
+  id            String        @id @default(uuid())
+  title         String
+  description   String?
+  boardroom     String
+  startTime     DateTime?
+  endTime       DateTime?
+  status        String        @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+  meetingUrl    String?
+  createdById   Int
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  createdBy     User          @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  chatMessages  ChatMessage[]
+}
+
+model ChatMessage {
+  id          String   @id @default(uuid())
+  meetingId   String
+  userId      Int
+  userName    String
+  message     String
+  createdAt   DateTime @default(now())
+  meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
