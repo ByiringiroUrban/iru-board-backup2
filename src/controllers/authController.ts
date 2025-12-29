@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '../prisma/client';
 import { signToken } from '../utils/jwt';
 import { AuthRequest } from '../middleware/auth';
-import { Role } from '@prisma/client';
+import { Role, PrismaClientInitializationError } from '@prisma/client';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -49,6 +49,17 @@ export const register = async (req: Request, res: Response) => {
     return res.status(201).json({ user: safeUser, token, redirectPath });
   } catch (err: any) {
     console.error('Register error:', err);
+    
+    // Handle database connection errors specifically
+    if (err instanceof PrismaClientInitializationError || err.name === 'PrismaClientInitializationError') {
+      return res.status(503).json({ 
+        message: 'Database connection failed',
+        error: 'Cannot connect to database server. Please check your database configuration.',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+        help: 'Run "npm run test:db" to diagnose the issue'
+      });
+    }
+    
     return res.status(500).json({ message: err?.message || 'Server error' });
   }
 };
@@ -82,6 +93,17 @@ export const login = async (req: Request, res: Response) => {
     return res.json({ user: safeUser, token, redirectPath });
   } catch (err: any) {
     console.error('Login error:', err);
+    
+    // Handle database connection errors specifically
+    if (err instanceof PrismaClientInitializationError || err.name === 'PrismaClientInitializationError') {
+      return res.status(503).json({ 
+        message: 'Database connection failed',
+        error: 'Cannot connect to database server. Please check your database configuration.',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+        help: 'Run "npm run test:db" to diagnose the issue'
+      });
+    }
+    
     return res.status(500).json({ message: err?.message || 'Server error' });
   }
 };
@@ -99,6 +121,17 @@ export const me = async (req: AuthRequest, res: Response) => {
     return res.json({ user: safeUser });
   } catch (err: any) {
     console.error('Me endpoint error:', err);
+    
+    // Handle database connection errors specifically
+    if (err instanceof PrismaClientInitializationError || err.name === 'PrismaClientInitializationError') {
+      return res.status(503).json({ 
+        message: 'Database connection failed',
+        error: 'Cannot connect to database server. Please check your database configuration.',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+        help: 'Run "npm run test:db" to diagnose the issue'
+      });
+    }
+    
     return res.status(500).json({ message: err?.message || 'Server error' });
   }
 };

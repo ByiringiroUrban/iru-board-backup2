@@ -26,6 +26,7 @@ model User {
   payments      Payment[]
   meetings      Meeting[]
   chatMessages  ChatMessage[]
+  documents     Document[]
 }
 
 model Payment {
@@ -72,6 +73,7 @@ model Meeting {
   updatedAt     DateTime      @updatedAt
   createdBy     User          @relation(fields: [createdById], references: [id], onDelete: Cascade)
   chatMessages  ChatMessage[]
+  documents     Document[]
 }
 
 model ChatMessage {
@@ -80,6 +82,20 @@ model ChatMessage {
   userId      Int
   userName    String
   message     String
+  createdAt   DateTime @default(now())
+  meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  meetingId   String
+  userId      Int
+  fileName    String
+  filePath    String
+  fileSize    Int       // Size in bytes
+  mimeType    String
+  uploadedBy  String   // User name who uploaded
   createdAt   DateTime @default(now())
   meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)

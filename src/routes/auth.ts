@@ -5,6 +5,11 @@ import { createMeeting, scheduleMeeting, getMeetings, getMeetingById, updateMeet
 import { getAllAvailableMeetings } from '../controllers/getAllMeetings';
 import { generateToken } from '../controllers/agoraController';
 import { getChatMessages } from '../controllers/chatController';
+import { uploadDocument, getDocuments, getAllDocuments, downloadDocument, deleteDocument, uploadMiddleware } from '../controllers/documentController';
+import { generateMeetingNotes } from '../controllers/notesController';
+import { getDashboardStats } from '../controllers/dashboardController';
+import { getTeamMembers } from '../controllers/teamController';
+import { getInsights } from '../controllers/insightsController';
 import prisma from '../prisma/client';
 import bcrypt from 'bcryptjs';
 import { authenticate, requireAdmin } from '../middleware/auth';
@@ -63,5 +68,26 @@ router.post('/agora/token', authenticate, generateToken);
 
 // Chat routes
 router.get('/meetings/:id/messages', authenticate, getChatMessages);
+
+// Document routes
+router.post('/meetings/:meetingId/documents', authenticate, uploadMiddleware, uploadDocument);
+router.get('/meetings/:meetingId/documents', authenticate, getDocuments);
+router.get('/documents/:id/download', authenticate, downloadDocument);
+router.delete('/documents/:id', authenticate, deleteDocument);
+
+// Notes routes
+router.get('/meetings/:meetingId/notes', authenticate, generateMeetingNotes);
+
+// Dashboard routes
+router.get('/dashboard/stats', authenticate, getDashboardStats);
+
+// Documents routes (all documents)
+router.get('/documents', authenticate, getAllDocuments);
+
+// Team routes
+router.get('/team', authenticate, getTeamMembers);
+
+// Insights routes
+router.get('/insights', authenticate, getInsights);
 
 export default router;
