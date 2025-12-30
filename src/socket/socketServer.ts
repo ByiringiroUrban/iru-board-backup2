@@ -206,6 +206,55 @@ export function initializeSocketIO(httpServer: HTTPServer): SocketIOServer {
       }
     });
 
+    // Handle admin mute/unmute commands
+    socket.on('admin-mute-user', async (data: { meetingId: string; targetAgoraUid: number; mute: boolean }) => {
+      try {
+        const { meetingId, targetAgoraUid, mute } = data;
+        const roomName = `meeting-${meetingId || socket.meetingId}`;
+        
+        if (!roomName) {
+          socket.emit('error', { message: 'Meeting ID is required' });
+          return;
+        }
+
+        // Verify that the requester is the meeting admin
+        try {
+          const meeting = await prisma.meeting.findUnique({
+            where: { id: meetingId || socket.meetingId },
+            select: { createdById: true }
+          });
+
+          if (!meeting) {
+            socket.emit('error', { message: 'Meeting not found' });
+            return;
+          }
+
+          if (meeting.createdById !== socket.userId) {
+            socket.emit('error', { message: 'Only meeting admin can mute/unmute users' });
+            return;
+          }
+
+          console.log(`🔇 [SOCKET] Admin ${socket.userId} ${mute ? 'muting' : 'unmuting'} Agora UID ${targetAgoraUid} in meeting ${meetingId}`);
+          
+          // Broadcast mute/unmute command to all users in the room
+          // The target user will identify themselves by their Agora UID
+          io.to(roomName).emit('user-muted', {
+            targetAgoraUid,
+            muted: mute,
+            adminUserId: socket.userId,
+            adminUserName: socket.userName,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (dbError: any) {
+          console.error('❌ [SOCKET] Database error checking admin:', dbError);
+          socket.emit('error', { message: 'Failed to verify admin permissions' });
+        }
+      } catch (error: any) {
+        console.error('❌ [SOCKET] Error handling admin mute:', error);
+        socket.emit('error', { message: error?.message || 'Failed to mute/unmute user' });
+      }
+    });
+
     // Handle disconnection
     socket.on('disconnect', () => {
       console.log('🔌 [SOCKET] Client disconnected:', socket.id, 'User ID:', socket.userId);
