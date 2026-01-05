@@ -16,8 +16,12 @@ const allowedOrigins = [
   'http://127.0.0.1:8080',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:3000',
-  'https://www.iruboard.com/',
+  'https://www.iruboard.com',
+  'https://iruboard.com',
 ];
+
+// Normalize origin by removing trailing slash for comparison
+const normalizeOrigin = (origin: string) => origin.replace(/\/$/, '');
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -31,14 +35,22 @@ app.use(cors({
       }
     }
     
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Normalize and check origin
+    const normalizedOrigin = normalizeOrigin(origin);
+    const normalizedAllowedOrigins = allowedOrigins.map(normalizeOrigin);
+    
+    if (normalizedAllowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
     
     console.warn(`CORS blocked origin: ${origin}`);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 }));
 
 app.use('/api/auth', authRoutes);

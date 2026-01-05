@@ -35,7 +35,7 @@ npm run dev
 
 After restarting, you should see:
 ```
-🚀 Server listening on http://localhost:5000
+🚀 Server listening on http://iru-board-be-production.up.railway.app
 🔌 Socket.io server initialized
 ```
 

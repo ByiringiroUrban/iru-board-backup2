@@ -227,7 +227,7 @@ JWT_SECRET="your-secret-key-here"
 # Server
 PORT=5000
 FRONTEND_URL="http://localhost:8080"
-BACKEND_URL="http://localhost:5000"
+BACKEND_URL="http://iru-board-be-production.up.railway.app"
 
 # Agora (for video calls)
 AGORA_APP_ID="your-agora-app-id"

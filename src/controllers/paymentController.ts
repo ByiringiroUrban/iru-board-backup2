@@ -150,7 +150,7 @@ export const createPayment = async (req: AuthRequest, res: Response) => {
       method: paypackMethod, // Payment method: 'momo' or 'airtel'
       callback_url: `${process.env.FRONTEND_URL || 'http://localhost:8080'}/payment/success`,
       cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:8080'}/payment/cancel`,
-      webhook_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/payment/webhook`
+      webhook_url: `${process.env.BACKEND_URL || 'http://iru-board-be-production.up.railway.app'}/api/auth/payment/webhook`
     };
 
     // Create signature for Paypack (HMAC SHA256)
