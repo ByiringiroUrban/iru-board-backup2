@@ -18,6 +18,7 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',
   'https://www.iruboard.com',
   'https://iruboard.com',
+  'https://iru-board-beryl.vercel.app'
 ];
 
 // Normalize origin by removing trailing slash for comparison
